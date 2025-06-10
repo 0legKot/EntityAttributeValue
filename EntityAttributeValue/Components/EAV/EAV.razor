@@ -1,0 +1,99 @@
+﻿@page "/EAV"
+@attribute [StreamRendering]
+@inject EavDbContext Db
+@rendermode InteractiveServer
+
+<PageTitle>EAV</PageTitle>
+<div class="container py-4">
+  <div class="row g-3 mb-4">
+    <div class="col-md-6">
+      <label for="stringAttrs" class="form-label">String Attributes</label>
+      <select
+        id="stringAttrs"
+        class="form-select form-select-lg"
+        multiple
+        @bind="SelectedAttributeStringKeys"
+        style="height: 200px;"
+      >
+        @foreach (var attr in AllAttributesString)
+        {
+          <option value="@attr.Id">@attr.Name</option>
+        }
+      </select>
+    </div>
+
+    <div class="col-md-6">
+      <label for="intAttrs" class="form-label">Integer Attributes</label>
+      <select
+        id="intAttrs"
+        class="form-select form-select-lg"
+        multiple
+        @bind="SelectedAttributeIntKeys"
+        style="height: 200px;"
+      >
+        @foreach (var attr in AllAttributesInt)
+        {
+          <option value="@attr.Id">@attr.Name</option>
+        }
+      </select>
+    </div>
+  </div>
+
+  <div class="row">
+  <div class="col">
+    <button
+      type="button"
+      class="btn btn-primary btn-lg w-100"
+      @onclick="OnGetResults"
+    >
+      Get results!
+    </button>
+  </div>
+</div>
+</div>
+
+
+@if (Entities.Any())
+{
+  <div class="table-responsive">
+    <table class="table table-striped table-hover table-bordered align-middle">
+      <thead class="table-dark text-center">
+        <tr>
+          <th scope="col">Entity</th>
+          @foreach (var key in SelectedAttributeStringKeys)
+          {
+            <th scope="col">@AllAttributesString.First(a => a.Id == int.Parse(key)).Name</th>
+          }
+          @foreach (var key in SelectedAttributeIntKeys)
+          {
+            <th scope="col">@AllAttributesInt.First(a => a.Id == int.Parse(key)).Name</th>
+          }
+        </tr>
+      </thead>
+      <tbody>
+        @foreach (var kvp in Entities)
+        {
+          <tr>
+            <td>@kvp.Value.Name</td>
+            @foreach (var key in SelectedAttributeStringKeys)
+            {
+              kvp.Value.AttributeIdToText.TryGetValue(key, out var strVal);
+              <td>@strVal</td>
+            }
+            @foreach (var key in SelectedAttributeIntKeys)
+            {
+              kvp.Value.AttributeIdToInt.TryGetValue(key, out var intVal);
+              <td class="text-end">@intVal</td>
+            }
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}
+else
+{
+  <div class="alert alert-info text-center">
+    No data.
+  </div>
+}
